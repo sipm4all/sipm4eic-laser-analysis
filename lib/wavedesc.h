@@ -142,14 +142,12 @@ class waveform
   waveform(std::string filename);
   void rewind();
   bool next();
-  TGraph get_graph() { return graph; };
+  TGraph &get_graph() { return graph; };
   std::vector<float> get_transitions(float threshold, float sign);
   float get_amplitude(float tmin, float tmax);
 
  private:
   std::ifstream file;
-  WAVEDESC_t WAVEDESC;
-  char DATA[1048576];
   TGraph graph;
   
 };
@@ -170,14 +168,17 @@ bool
 waveform::next()
 {
   graph.Set(0);
+  WAVEDESC_t WAVEDESC;
   file.read((char *)&WAVEDESC, sizeof(WAVEDESC));
   if (file.eof()) return false;
-  file.read((char *)&DATA, WAVEDESC.WAVE_ARRAY_1);
+  char *DATA = new char[WAVEDESC.WAVE_ARRAY_1];
+  file.read(DATA, WAVEDESC.WAVE_ARRAY_1);
   for (int i = WAVEDESC.FIRST_VALID_PNT; i < WAVEDESC.LAST_VALID_PNT; ++i) {
     double x = (WAVEDESC.HORIZ_INTERVAL * i + WAVEDESC.HORIZ_OFFSET) * 1.e9;
     double y = (WAVEDESC.VERTICAL_GAIN * DATA[i] - WAVEDESC.VERTICAL_OFFSET) * 1.e3;
     graph.SetPoint(i, x, y);
   }
+  delete [] DATA;
   return true;
 }
 
