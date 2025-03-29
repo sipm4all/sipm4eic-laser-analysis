@@ -51,11 +51,13 @@ static PyObject* wavedesc_get(wavedescObject* self) {
     // Convert the result to a Python list of tuples
     PyObject* pyList = PyList_New(data.size());
     for (size_t i = 0; i < data.size(); ++i) {
-        float x = data[i][0];
-        float y = data[i][1];
-
+        PyObject* x = PyFloat_FromDouble(data[i][0]);
+	PyObject* y = PyFloat_FromDouble(data[i][1]);
+	
         // Convert the elements of std::array to Python float objects
-        PyObject* pyTuple = PyTuple_Pack(2, PyFloat_FromDouble(x), PyFloat_FromDouble(y));
+        PyObject* pyTuple = PyTuple_Pack(2, x, y);
+	Py_DECREF(x);
+	Py_DECREF(y);
         PyList_SetItem(pyList, i, pyTuple);
     }
 
